@@ -19,7 +19,7 @@
 #include <string.h>
 #include <time.h>
 #include <zlib.h>
-#include "dependencies/minizip/zip.h"
+#include "minizip/zip.h"
 
 #ifdef STDC
 #  include <stddef.h>
@@ -48,7 +48,7 @@
 
 #ifndef NOCRYPT
 #  define INCLUDECRYPTINGCODE_IFCRYPTALLOWED
-#  include "dependencies/minizip/crypt.h"
+#  include "minizip/crypt.h"
 #endif
 
 #ifndef local

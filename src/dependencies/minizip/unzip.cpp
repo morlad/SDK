@@ -25,8 +25,8 @@
 #endif*/
 
 #include <zlib.h>
-#include "dependencies/minizip/unzip.h"
-#include "dependencies/minizip/crypt.h"
+#include "minizip/unzip.h"
+#include "minizip/crypt.h"
 
 #ifdef STDC
 #  include <stddef.h>

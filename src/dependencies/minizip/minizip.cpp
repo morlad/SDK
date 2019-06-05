@@ -1,4 +1,4 @@
-#include "dependencies/minizip/minizip.h"
+#include "minizip/minizip.h"
 
 uLong filetime(const char *filename, tm_zip *tmzip, uLong *dostime)
 {

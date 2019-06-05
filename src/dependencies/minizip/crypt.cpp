@@ -1,4 +1,4 @@
-#include "dependencies/minizip/crypt.h"
+#include "minizip/crypt.h"
 
 int decrypt_byte(unsigned long* pkeys, const unsigned long* pcrc_32_tab)
 {

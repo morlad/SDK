@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "dependencies/minizip/ioapi.h"
+#include "minizip/ioapi.h"
 
 #if defined(_WIN32)
 #  define snprintf _snprintf
