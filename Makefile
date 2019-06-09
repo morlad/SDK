@@ -180,8 +180,8 @@ modio_src += $(wildcard src/wrappers/*.cpp)
 
 # OBJECT FILES (don't touch)
 # --------------------------
-deps_o += $(subst .c,.o,$(addprefix $(OUTPUT_DIR)/src/dependencies/,$(filter %.c,$(deps_src))))
-deps_o += $(subst .cpp,.o,$(addprefix $(OUTPUT_DIR)/src/dependencies/,$(filter %.cpp,$(deps_src))))
+deps_o += $(subst .c,.o,$(addprefix $(OUTPUT_DIR)/dependencies/,$(filter %.c,$(deps_src))))
+deps_o += $(subst .cpp,.o,$(addprefix $(OUTPUT_DIR)/dependencies/,$(filter %.cpp,$(deps_src))))
 modio_o += $(subst .c,.o,$(addprefix $(OUTPUT_DIR)/,$(filter %.c,$(modio_src))))
 modio_o += $(subst .cpp,.o,$(addprefix $(OUTPUT_DIR)/,$(filter %.cpp,$(modio_src))))
 
@@ -270,9 +270,9 @@ endif
 
 
 fetch-curl:
-	-$(Q)git clone https://github.com/curl/curl.git src/dependencies/curl
-	$(Q)git -C src/dependencies/curl fetch --all --tags
-	$(Q)git -C src/dependencies/curl checkout $(CURL_VERSION)
+	-$(Q)git clone https://github.com/curl/curl.git dependencies/curl
+	$(Q)git -C dependencies/curl fetch --all --tags
+	$(Q)git -C dependencies/curl checkout $(CURL_VERSION)
 
 fetch-json:
 	-$(Q)git clone https://github.com/nlohmann/json.git dependencies/json
@@ -283,26 +283,26 @@ fetch-all: fetch-curl fetch-json
 
 # SPECIAL FILE HANDLING
 # ---------------------
-$(OUTPUT_DIR)/src/%.o: CPPFLAGS += -Iinclude -Isrc/dependencies/curl/include -Iinclude/dependencies/miniz -Idependencies/json/single_include
+$(OUTPUT_DIR)/src/%.o: CPPFLAGS += -Iinclude -Idependencies/curl/include -Idependencies/miniz -Idependencies/json/single_include -Idependencies
 
-$(OUTPUT_DIR)/src/dependencies/%.o: NOWARNINGS += -Wno-everything
+$(OUTPUT_DIR)/dependencies/%.o: NOWARNINGS += -Wno-everything
 
-$(OUTPUT_DIR)/src/dependencies/minizip/%.o: CPPFLAGS += -Iinclude/dependencies
+$(OUTPUT_DIR)/dependencies/minizip/%.o: CPPFLAGS += -Idependencies -Idependencies/miniz
 
-$(OUTPUT_DIR)/src/dependencies/curl/lib/%.o: CPPFLAGS += -Isrc/dependencies/curl/include -Isrc/dependencies/curl/lib -Iinclude/dependencies/miniz
-$(OUTPUT_DIR)/src/dependencies/curl/lib/%.o: CPPFLAGS += -DBUILDING_LIBCURL -DCURL_NO_OLDIES -DHTTP_ONLY
+$(OUTPUT_DIR)/dependencies/curl/lib/%.o: CPPFLAGS += -Idependencies/curl/include -Idependencies/curl/lib -Idependencies/miniz
+$(OUTPUT_DIR)/dependencies/curl/lib/%.o: CPPFLAGS += -DBUILDING_LIBCURL -DCURL_NO_OLDIES -DHTTP_ONLY
 
 ifeq ($(os),osx)
-$(OUTPUT_DIR)/src/dependencies/curl/lib/%.o: CPPFLAGS += -DHAVE_CONFIG_H -Iinclude/dependencies/curl/macos
+$(OUTPUT_DIR)/dependencies/curl/lib/%.o: CPPFLAGS += -DHAVE_CONFIG_H -Iinclude/dependencies/curl/macos
 # use Security-framework as TLS-backend
-$(OUTPUT_DIR)/src/dependencies/curl/lib/%.o: CPPFLAGS += -DUSE_SECTRANSP
+$(OUTPUT_DIR)/dependencies/curl/lib/%.o: CPPFLAGS += -DUSE_SECTRANSP
 endif
 
 ifeq ($(os),windows)
 $(OUTPUT_DIR)/src/%.o: CPPFLAGS += -DMODIO_DYNAMICLIB
-$(OUTPUT_DIR)/src/dependencies/curl/lib/%.o: CPPFLAGS += -Dstrdup=_strdup -Daccess=_access -Dread=_read -Dwrite=_write
+$(OUTPUT_DIR)/dependencies/curl/lib/%.o: CPPFLAGS += -Dstrdup=_strdup -Daccess=_access -Dread=_read -Dwrite=_write
 # use Schannel-framework as TLS-backend
-$(OUTPUT_DIR)/src/dependencies/curl/lib/%.o: CPPFLAGS += -DUSE_SCHANNEL -DUSE_WINDOWS_SSPI
+$(OUTPUT_DIR)/dependencies/curl/lib/%.o: CPPFLAGS += -DUSE_SCHANNEL -DUSE_WINDOWS_SSPI
 endif
 
 
