@@ -44,4 +44,5 @@ src/modio.a
 
 !examples/c/mods_dir/readme.txt
 !examples/c++/mods_dir/readme.txt
-src/dependencies/curl/
+dependencies/curl/
+dependencies/json/
