@@ -1,4 +1,5 @@
 #include "Utility.h"
+#include <iomanip>
 
 namespace modio
 {
@@ -118,7 +119,7 @@ void clearLog()
 
 u32 getCurrentTime()
 {
-  return (u32)std::time(nullptr);
+  return (u32)time(NULL);
 }
 
 double getCurrentTimeMillis()

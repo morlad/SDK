@@ -30,7 +30,7 @@
 #include <chrono>
 
 #include "c/ModioC.h"
-#include "dependencies/nlohmann/json.hpp"
+#include "nlohmann/json.hpp"
 #include "dependencies/minizip/minizip.h"
 #include "Globals.h"
 

@@ -10,7 +10,7 @@ set (CMAKE_CXX_STANDARD 11)
 # runtime statically. Requires libcurl to be built with /MT as well.
 # cmake -D crtmode=static .
 
-include_directories(include additional_dependencies include/dependencies/miniz)
+include_directories(include additional_dependencies include/dependencies/miniz dependencies/json/single_include src/dependencies/curl/include)
 
 file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.c")
 
