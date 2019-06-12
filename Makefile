@@ -1,8 +1,8 @@
 # Makefile to generate a statically linked modio shared library
 
 
-# OS DETECTION (don't touch)
-# --------------------------
+# OS DETECTION
+# ------------
 ifdef ComSpec
 	os = windows
 else
@@ -22,13 +22,24 @@ endif
 # CONFIG
 # ------
 OUTPUT_DIR := build
-USE_SANITIZER = 0
+
+# macos only:
 MIN_MACOS_VERSION = 10.13
-Q = @
+
+# windows only:
+# path to the LLVM installation
+# ! do NOT add trailing \ 
+# ! do NOT quote it
+LLVM_PATH = C:\Program Files\LLVM
+
 OPT = -O2
 OPT += -fstrict-aliasing
 CURL_VERSION = tags/curl-7_65_0 
 JSON_VERSION = tags/v3.6.1
+
+USE_SANITIZER = 0
+Q = @
+
 ifeq ($(os),osx)
 LIBRARY_NAME = libmodio.dylib
 endif
@@ -38,6 +49,7 @@ endif
 ifeq ($(os),linux)
 LIBRARY_NAME = libmodio.so
 endif
+
 WARNINGS += -Weverything
 WARNINGS += -Werror-shadow
 # curl:
@@ -178,16 +190,16 @@ modio_src += $(wildcard src/c++/schemas/*.cpp)
 modio_src += $(wildcard src/wrappers/*.cpp)
 
 
-# OBJECT FILES (don't touch)
-# --------------------------
+# OBJECT FILES
+# ------------
 deps_o += $(subst .c,.o,$(addprefix $(OUTPUT_DIR)/dependencies/,$(filter %.c,$(deps_src))))
 deps_o += $(subst .cpp,.o,$(addprefix $(OUTPUT_DIR)/dependencies/,$(filter %.cpp,$(deps_src))))
 modio_o += $(subst .c,.o,$(addprefix $(OUTPUT_DIR)/,$(filter %.c,$(modio_src))))
 modio_o += $(subst .cpp,.o,$(addprefix $(OUTPUT_DIR)/,$(filter %.cpp,$(modio_src))))
 
 
-# LINKER OPTIONS (don't touch)
-# ----------------------------
+# LINKER OPTIONS
+# --------------
 TARGET_ARCH = -m64 -g -march=core2
 
 ifeq ($(os),osx)
@@ -213,8 +225,8 @@ LDLIBS += crypt32.lib
 endif
 
 
-# COMPILER OPTIONS (don't touch)
-# ------------------------------
+# COMPILER OPTIONS
+# ----------------
 CFLAGS += -std=c11
 CFLAGS += $(WARNINGS) $(NOWARNINGS) $(OPT)
 CXXFLAGS += -std=c++17
@@ -315,9 +327,9 @@ ifeq ($(os),osx)
 endif
 ifeq ($(os),windows)
 	DEVNULL = NUL
-	CC = "C:\Program Files\LLVM\bin\clang.exe"
-	CXX = "C:\Program Files\LLVM\bin\clang.exe"
-	LINKER = "C:\Program Files\LLVM\bin\lld-link.exe"
+	CC = "$(LLVM_PATH)\bin\clang.exe"
+	CXX = "$(LLVM_PATH)\bin\clang++.exe"
+	LINKER = "$(LLVM_PATH)\bin\lld-link.exe"
 	ensure_dir=mkdir $(subst /,\,$(@D)) 2> $(DEVNULL) || exit 0
 	RM = del
 endif
