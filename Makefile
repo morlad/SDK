@@ -233,9 +233,6 @@ CXXFLAGS += -std=c++17
 CXXFLAGS += $(WARNINGS) -Weffc++ $(NOWARNINGS) -Wno-c++98-compat -Wno-c++98-compat-pedantic $(OPT)
 
 ifeq ($(os),windows)
-CFLAGS += -MT
-CXXFLAGS += -MT
-
 CPPFLAGS += -DUNICODE -D_UNICODE
 CPPFLAGS += -DNDEBUG
 CPPFLAGS += -D_CRT_SECURE_NO_WARNINGS
