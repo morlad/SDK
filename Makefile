@@ -63,6 +63,9 @@ NOWARNINGS += -Wno-zero-as-null-pointer-constant
 # temporary:
 NOWARNINGS += -Wno-exit-time-destructors
 NOWARNINGS += -Wno-global-constructors
+# macos, json
+NOWARNINGS += -Wno-weak-vtables
+NOWARNINGS += -Wno-padded
 
 
 # SOURCE FILES
