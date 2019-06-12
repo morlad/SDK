@@ -214,6 +214,7 @@ endif
 endif
 
 ifeq ($(os),windows)
+TARGET_ARCH += -gcodeview
 LDFLAGS += /NOLOGO /MACHINE:X64 /NODEFAULTLIB /INCREMENTAL:NO
 LDFLAGS += /SUBSYSTEM:WINDOWS /DEBUG
 LDLIBS += libucrt.lib
