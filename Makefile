@@ -60,7 +60,9 @@ NOWARNINGS += -Wno-switch-enum
 NOWARNINGS += -Wno-covered-switch-default
 # everything:
 NOWARNINGS += -Wno-zero-as-null-pointer-constant
-NOWARNINGS += -Wno-unused-parameter
+# temporary:
+NOWARNINGS += -Wno-exit-time-destructors
+NOWARNINGS += -Wno-global-constructors
 
 
 # SOURCE FILES
