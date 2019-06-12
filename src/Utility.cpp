@@ -544,3 +544,12 @@ std::string base64Encode(unsigned char const* bytes_to_encode, unsigned int in_l
 }
 
 } // namespace modio
+
+
+// curl requires strdup(), but windows only has _strdup()
+#ifdef MODIO_WINDOWS_DETECTED
+extern "C" char *strdup(char const *str)
+{
+  return _strdup(str);
+}
+#endif

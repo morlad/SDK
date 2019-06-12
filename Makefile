@@ -312,7 +312,7 @@ endif
 
 ifeq ($(os),windows)
 $(OUTPUT_DIR)/src/%.o: CPPFLAGS += -DMODIO_DYNAMICLIB
-$(OUTPUT_DIR)/dependencies/curl/lib/%.o: CPPFLAGS += -Dstrdup=_strdup -Daccess=_access -Dread=_read -Dwrite=_write
+$(OUTPUT_DIR)/dependencies/curl/lib/%.o: CPPFLAGS += -Daccess=_access -Dread=_read -Dwrite=_write
 # use Schannel-framework as TLS-backend
 $(OUTPUT_DIR)/dependencies/curl/lib/%.o: CPPFLAGS += -DUSE_SCHANNEL -DUSE_WINDOWS_SSPI
 endif
