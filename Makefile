@@ -50,6 +50,7 @@ ifeq ($(os),linux)
 LIBRARY_NAME = libmodio.so
 endif
 
+ifneq ($(os),linux)
 WARNINGS += -Weverything
 WARNINGS += -Werror-shadow
 # curl:
@@ -66,6 +67,9 @@ NOWARNINGS += -Wno-switch-enum
 NOWARNINGS += -Wno-covered-switch-default
 NOWARNINGS += -Wno-weak-vtables
 NOWARNINGS += -Wno-padded
+else
+WARNINGS += -Wall
+endif
 
 
 # SOURCE FILES
@@ -230,13 +234,20 @@ LDLIBS += advapi32.lib
 LDLIBS += crypt32.lib
 endif
 
+ifeq ($(os),linux)
+LDLIBS += -lstdc++ -lpthread
+endif
 
 # COMPILER OPTIONS
 # ----------------
 CFLAGS += -std=c11
 CFLAGS += $(WARNINGS) $(NOWARNINGS) $(OPT)
 CXXFLAGS += -std=c++17
-CXXFLAGS += $(WARNINGS) -Weffc++ $(NOWARNINGS) -Wno-c++98-compat -Wno-c++98-compat-pedantic $(OPT)
+CXXFLAGS += $(WARNINGS) $(NOWARNINGS) $(OPT)
+# implies clang
+ifneq ($(os),linux)
+CXXFLAGS += -Weffc++ -Wno-c++98-compat -Wno-c++98-compat-pedantic
+endif
 
 ifeq ($(os),windows)
 CPPFLAGS += -DUNICODE -D_UNICODE
@@ -246,6 +257,11 @@ CPPFLAGS += -DCURL_STATICLIB
 CPPFLAGS += -DHAS_STDINT_H
 endif
 
+ifeq ($(os),linux)
+CPPFLAGS += -D_POSIX_C_SOURCE=200809L
+CFLAGS += -fPIC
+CXXFLAGS += -fPIC
+endif
 
 # TARGETS
 # -------
@@ -281,6 +297,8 @@ ifeq ($(os),windows)
 endif
 
 ifeq ($(os),linux)
+	$(Q)$(CC) -shared $(TARGET_ARCH) $(LDFLAGS) $^ $(LDLIBS) $(OUTPUT_OPTION)
+	$(Q)strip --strip-debug $@
 endif
 
 
@@ -300,9 +318,13 @@ fetch-all: fetch-curl fetch-json
 # ---------------------
 $(OUTPUT_DIR)/src/%.o: CPPFLAGS += -Iinclude -Idependencies/curl/include -Idependencies/miniz -Idependencies/json/single_include -Idependencies
 
-$(OUTPUT_DIR)/src/wrappers/Curl%.o: NOWARNINGS += -Wno-disabled-macro-expansion
+$(OUTPUT_DIR)/amalgated%.o: CPPFLAGS += -I../include -I../dependencies/curl/include -I../dependencies/miniz -I../dependencies/json/single_include -I../dependencies
 
+# clang implied
+ifneq ($(os),linux)
+$(OUTPUT_DIR)/src/wrappers/Curl%.o: NOWARNINGS += -Wno-disabled-macro-expansion
 $(OUTPUT_DIR)/dependencies/%.o: NOWARNINGS += -Wno-everything
+endif
 
 $(OUTPUT_DIR)/dependencies/minizip/%.o: CPPFLAGS += -Idependencies -Idependencies/miniz
 
@@ -313,6 +335,10 @@ ifeq ($(os),osx)
 $(OUTPUT_DIR)/dependencies/curl/lib/%.o: CPPFLAGS += -DHAVE_CONFIG_H -Iinclude/dependencies/curl/macos
 # use Security-framework as TLS-backend
 $(OUTPUT_DIR)/dependencies/curl/lib/%.o: CPPFLAGS += -DUSE_SECTRANSP
+endif
+
+ifeq ($(os),linux)
+$(OUTPUT_DIR)/dependencies/curl/lib/%.o: CPPFLAGS += -DHAVE_CONFIG_H -Iinclude/dependencies/curl/linux
 endif
 
 ifeq ($(os),windows)
