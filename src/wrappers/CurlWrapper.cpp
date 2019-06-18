@@ -1,5 +1,7 @@
 #include "wrappers/CurlWrapper.h"
 
+#define ENABLE_CURL_LOGGING 0
+
 namespace modio
 {
 namespace curlwrapper
@@ -112,6 +114,34 @@ void process()
     }
   } while (curl_message);
 }
+
+#if ENABLE_CURL_LOGGING
+static int onCurlDebug(CURL *handle, curl_infotype type, char *data, size_t size, void *userptr)
+{
+  std::string msg(data, size);
+  unsigned int type_mask = (unsigned int)((uintptr_t)userptr);
+  if ((1 << type) & type_mask)
+  {
+    modio::writeLogLine(msg, MODIO_DEBUGLEVEL_LOG);
+  }
+  return 0;
+}
+
+// Can be used to enable logging of curl data sent and received.
+// If enable_body is true the message body is logged as well.
+//   This has to be false if the message body may contain binary data.
+static void enableCurlLogging(CURL *curl, bool enable_body)
+{
+  curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+  curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, onCurlDebug);
+  unsigned int type_mask = (1 << CURLINFO_TEXT) | (1 << CURLINFO_HEADER_OUT) | (1 << CURLINFO_HEADER_IN);
+  if (enable_body)
+  {
+    type_mask |= (1 << CURLINFO_DATA_IN) | (1 << CURLINFO_DATA_OUT);
+  }
+  curl_easy_setopt(curl, CURLOPT_DEBUGDATA, ((void*)(uintptr_t)type_mask));
+}
+#endif
 
 void get(u32 call_number, std::string url, std::vector<std::string> headers, std::function<void(u32 call_number, u32 response_code, nlohmann::json response_json)> callback)
 {
@@ -463,6 +493,9 @@ static void onGetDownloadMod(u32 call_number, u32 response_code, nlohmann::json 
 
       CURL *curl;
       curl = curl_easy_init();
+#if ENABLE_CURL_LOGGING
+      enableCurlLogging(curl, false);
+#endif
 
       g_current_mod_download->queued_mod_download->state = MODIO_MOD_STARTING_DOWNLOAD;
       g_current_mod_download->file = file;
