@@ -194,7 +194,28 @@ void setHeaders(std::vector<std::string> headers, CURL *curl)
 void setVerifies(CURL *curl)
 {
   curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-  curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+  /*
+    SSL_VERIFYHOST needs to be enabled.
+
+    1) because the documentation says the following:
+       "When the verify value is 0, the connection succeeds regardless of the
+        names in the certificate. Use that ability with caution!"
+       In other words: don't do it; rather fix your certificates.
+
+    2) Secondly the macOS implementation using the Security.framework
+       depends on it being set, otherwise SNI is disabled as well, which
+       is bad.
+       "DarwinSSL: If verify value is 0, then SNI is also disabled. SNI is a
+        TLS extension that sends the hostname to the server. The server may
+        use that information to do such things as sending back a specific
+        certificate for the hostname, or forwarding the request to a specific
+        origin server. Some hostnames may be inaccessible if SNI is not
+        sent."
+
+    To enable it the value needs to be set to 2, not 1.
+    1 used to be for debugging, so 2 became the actual value to enable it.
+  */
+  curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
 }
 
 void setJsonResponseWrite(CURL *curl)
