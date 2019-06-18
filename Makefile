@@ -56,14 +56,14 @@ WARNINGS += -Werror-shadow
 NOWARNINGS += -Wno-reserved-id-macro
 NOWARNINGS += -Wno-documentation-unknown-command
 NOWARNINGS += -Wno-nonportable-system-include-path
-NOWARNINGS += -Wno-switch-enum
-NOWARNINGS += -Wno-covered-switch-default
 # everything:
 NOWARNINGS += -Wno-zero-as-null-pointer-constant
 # temporary:
 NOWARNINGS += -Wno-exit-time-destructors
 NOWARNINGS += -Wno-global-constructors
-# macos, json
+# json, macos:
+NOWARNINGS += -Wno-switch-enum
+NOWARNINGS += -Wno-covered-switch-default
 NOWARNINGS += -Wno-weak-vtables
 NOWARNINGS += -Wno-padded
 
@@ -299,6 +299,8 @@ fetch-all: fetch-curl fetch-json
 # SPECIAL FILE HANDLING
 # ---------------------
 $(OUTPUT_DIR)/src/%.o: CPPFLAGS += -Iinclude -Idependencies/curl/include -Idependencies/miniz -Idependencies/json/single_include -Idependencies
+
+$(OUTPUT_DIR)/src/wrappers/Curl%.o: NOWARNINGS += -Wno-disabled-macro-expansion
 
 $(OUTPUT_DIR)/dependencies/%.o: NOWARNINGS += -Wno-everything
 
