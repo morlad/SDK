@@ -184,27 +184,26 @@ deps_src += \
 endif
 
 # add modio source files via wildcards
-modio_src += $(wildcard src/*.cpp)
-
-modio_src += $(wildcard src/c/creators/*.cpp)
-modio_src += $(wildcard src/c/methods/*.cpp)
-modio_src += $(wildcard src/c/methods/callbacks/*.cpp)
-modio_src += $(wildcard src/c/schemas/*.cpp)
-
-modio_src += $(wildcard src/c++/creators/*.cpp)
-modio_src += $(wildcard src/c++/methods/*.cpp)
-modio_src += $(wildcard src/c++/methods/callbacks/*.cpp)
-modio_src += $(wildcard src/c++/schemas/*.cpp)
-
-modio_src += $(wildcard src/wrappers/*.cpp)
+$(OUTPUT_DIR)/amalgated.cpp: Makefile
+	echo "// Amalgated file" > $@
+	cat src/*.cpp >> $@
+	cat src/c/creators/*.cpp >> $@
+	cat src/c/methods/*.cpp >> $@
+	cat src/c/methods/callbacks/*.cpp >> $@
+	cat src/c/schemas/*.cpp >> $@
+	cat src/c++/creators/*.cpp >> $@
+	cat src/c++/methods/*.cpp >> $@
+	cat src/c++/methods/callbacks/*.cpp >> $@
+	cat src/c++/schemas/*.cpp >> $@
+	cat src/wrappers/*.cpp >> $@
+modio_src += $(OUTPUT_DIR)/amalgated.cpp
 
 
 # OBJECT FILES
 # ------------
 deps_o += $(subst .c,.o,$(addprefix $(OUTPUT_DIR)/dependencies/,$(filter %.c,$(deps_src))))
 deps_o += $(subst .cpp,.o,$(addprefix $(OUTPUT_DIR)/dependencies/,$(filter %.cpp,$(deps_src))))
-modio_o += $(subst .c,.o,$(addprefix $(OUTPUT_DIR)/,$(filter %.c,$(modio_src))))
-modio_o += $(subst .cpp,.o,$(addprefix $(OUTPUT_DIR)/,$(filter %.cpp,$(modio_src))))
+modio_o += $(subst .cpp,.o,$(filter %.cpp,$(modio_src)))
 
 
 # LINKER OPTIONS
@@ -318,7 +317,8 @@ fetch-all: fetch-curl fetch-json
 # ---------------------
 $(OUTPUT_DIR)/src/%.o: CPPFLAGS += -Iinclude -Idependencies/curl/include -Idependencies/miniz -Idependencies/json/single_include -Idependencies
 
-$(OUTPUT_DIR)/amalgated%.o: CPPFLAGS += -I../include -I../dependencies/curl/include -I../dependencies/miniz -I../dependencies/json/single_include -I../dependencies
+$(OUTPUT_DIR)/amalgated.o: CPPFLAGS += -Iinclude -Idependencies/curl/include -Idependencies/miniz -Idependencies/json/single_include -Idependencies
+
 
 # clang implied
 ifneq ($(os),linux)
