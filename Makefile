@@ -264,6 +264,8 @@ endif
 
 # TARGETS
 # -------
+.PHONY: dependencies library clean-lib modio all
+
 all: library
 
 library: $(OUTPUT_DIR)/$(LIBRARY_NAME)
@@ -271,7 +273,10 @@ library: $(OUTPUT_DIR)/$(LIBRARY_NAME)
 clean-lib:
 	$(Q)$(RM) $(OUTPUT_DIR)/$(LIBRARY_NAME)
 
-dependencies: dependencies/curl dependencies/json $(deps_o)
+$(deps_o): dependencies/json/single_include/nlohmann/json.hpp
+$(deps_o): dependencies/curl/include/curl/curl.h
+
+dependencies: $(deps_o)
 modio: $(modio_o)
 
 # amalgate all source files: source split over many files, each of them
@@ -307,7 +312,7 @@ endif
 	$(foreach file,$(filter %.cpp,$^),$(call CAT,$(file),$@))
 
 
-$(OUTPUT_DIR)/$(LIBRARY_NAME): dependencies modio $(deps_o) $(modio_o)
+$(OUTPUT_DIR)/$(LIBRARY_NAME): $(deps_o) $(modio_o)
 ifdef Q
 	@echo Linking $@
 endif
@@ -334,26 +339,23 @@ ifeq ($(os),linux)
 endif
 
 
-dependencies/curl: fetch-curl Makefile
-dependencies/json: fetch-json Makefile
-
-fetch-curl:
+dependencies/curl/include/curl/curl.h: Makefile
 ifdef Q
 	@echo Updating dependency: curl/curl
 endif
 	-$(Q)git clone https://github.com/curl/curl.git dependencies/curl
 	$(Q)git -C dependencies/curl fetch --all --tags
 	$(Q)git -C dependencies/curl checkout $(CURL_VERSION)
+	$(Q)touch $@
 
-fetch-json:
+dependencies/json/single_include/nlohmann/json.hpp: Makefile
 ifdef Q
 	@echo Updating dependency: nlohmann/json
 endif
 	-$(Q)git clone https://github.com/nlohmann/json.git dependencies/json
 	$(Q)git -C dependencies/json fetch --all --tags
 	$(Q)git -C dependencies/json checkout $(JSON_VERSION)
-
-fetch-all: fetch-curl fetch-json
+	$(Q)touch $@
 
 # SPECIAL FILE HANDLING
 # ---------------------
