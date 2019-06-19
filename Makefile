@@ -274,34 +274,37 @@ clean-lib:
 dependencies: dependencies/curl dependencies/json $(deps_o)
 modio: $(modio_o)
 
+# amalgate all source files: source split over many files, each of them
+# including nlohmann/json, which has tons of templates.
+# By amalgating the compile time for a complete rebuild could be reduced
+# to less then 20% of the non-amalgated version.
+# However builds with changes in a single file only take longer now.
+# You win some, you lose some.
+
+ifeq ($(os),windows)
+
+define CAT
+	$(Q)echo \#line 1 \"$(1)\" >> $(2)
+	$(Q)type $(1) >> $(2)
+
+endef
+
+else
+
+define CAT
+	$(Q)echo \#line 1 \"$(1)\" >> $(2)
+	$(Q)cat $(1) >> $(2)
+
+endef
+
+endif
+
 $(OUTPUT_DIR)/amalgated.cpp: Makefile $(modio_src)
 ifdef Q
-	@echo Amalgating source files $@
+	@echo Amalgating non-dependency source files into $@
 endif
 	$(Q)echo // Amalgated file > $@
-ifeq ($(os),windows)
-	$(Q)type src\*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)type src\c\creators\*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)type src\c\methods\*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)type src\c\methods\callbacks\*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)type src\c\schemas\*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)type src\c++\creators\*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)type src\c++\methods\*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)type src\c++\methods\callbacks\*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)type src\c++\schemas\*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)type src\wrappers\*.cpp >> $@ 2> $(DEVNULL)
-else
-	$(Q)cat src/*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)cat src/c/creators/*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)cat src/c/methods/*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)cat src/c/methods/callbacks/*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)cat src/c/schemas/*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)cat src/c++/creators/*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)cat src/c++/methods/*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)cat src/c++/methods/callbacks/*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)cat src/c++/schemas/*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)cat src/wrappers/*.cpp >> $@ 2> $(DEVNULL)
-endif
+	$(foreach file,$(filter %.cpp,$^),$(call CAT,$(file),$@))
 
 
 $(OUTPUT_DIR)/$(LIBRARY_NAME): dependencies modio $(deps_o) $(modio_o)
