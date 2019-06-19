@@ -329,6 +329,14 @@ bool directoryExists(const std::string &path)
   return false;
 }
 
+bool fileExists(const std::string &path)
+{
+  FILE *f = fopen(path.c_str(), "rb");
+  if (f)
+    fclose(f);
+  return f;
+}
+
 std::string getDirectoryPath(const std::string &filename)
 {
   size_t found;
@@ -336,11 +344,6 @@ std::string getDirectoryPath(const std::string &filename)
   if (found == std::string::npos)
     return "";
   return modio::addSlashIfNeeded(filename.substr(0, found));
-}
-
-bool fileExists(const std::string &directory)
-{
-  return check_file_exists(directory.c_str());
 }
 
 std::vector<std::string> getFilenames(const std::string &directory)

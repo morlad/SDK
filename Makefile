@@ -36,6 +36,8 @@ OPT = -O2
 OPT += -fstrict-aliasing
 CURL_VERSION = tags/curl-7_65_0 
 JSON_VERSION = tags/v3.6.1
+DIRENT_VERSION = v1.23
+MINIZIP_VERSION = tags/2.8.8
 
 USE_SANITIZER = 0
 Q = @
@@ -78,14 +80,12 @@ deps_src += \
 	miniz/miniz.c
 
 deps_src += \
-	dirent/dirent.cpp
-
-deps_src += \
-	minizip/crypt.cpp \
-	minizip/ioapi.cpp \
-	minizip/minizip.cpp \
-	minizip/unzip.cpp \
-	minizip/zip.cpp
+	minizip/mz_compat.c \
+	minizip/mz_zip.c \
+	minizip/mz_strm.c \
+	minizip/mz_strm_mem.c \
+	minizip/mz_crypt.c \
+	minizip/mz_os.c \
 
 deps_src += \
 	curl/lib/asyn-thread.c \
@@ -159,12 +159,15 @@ deps_src += \
 ifeq ($(os),osx)
 deps_src += \
 	curl/lib/vtls/sectransp.c \
+	minizip/mz_strm_os_posix.c \
 
 endif
 	
 
 ifeq ($(os),windows)
 deps_src += \
+	minizip/mz_strm_os_win32.c \
+	minizip/mz_os_win32.c \
 	curl/lib/curl_multibyte.c \
 	curl/lib/curl_sspi.c \
 	curl/lib/hostcheck.c \
@@ -263,6 +266,11 @@ ifneq ($(os),linux)
 CXXFLAGS += -Weffc++ -Wno-c++98-compat -Wno-c++98-compat-pedantic
 endif
 
+CPPFLAGS += -DHAVE_STDINT_H
+CPPFLAGS += -DHAVE_INTTYPES_H
+CPPFLAGS += -D_LARGEFILE64_SOURCE
+CPPFLAGS += -DMZ_ZIP_NO_ENCRYPTION
+
 ifeq ($(os),windows)
 CPPFLAGS += -DUNICODE -D_UNICODE
 CPPFLAGS += -DNDEBUG
@@ -290,6 +298,8 @@ clean-lib:
 
 $(deps_o): dependencies/json/single_include/nlohmann/json.hpp
 $(deps_o): dependencies/curl/include/curl/curl.h
+$(deps_o): dependencies/dirent/include/dirent.h
+$(deps_o): dependencies/minizip/mz_zip.h
 $(modio_o): $(modio_headers)
 
 dependencies: $(deps_o)
@@ -355,6 +365,24 @@ ifeq ($(os),linux)
 endif
 
 
+dependencies/minizip/mz_zip.h: Makefile
+ifdef Q
+	@echo Updating dependency: nmoinvaz/minizip @ $(MINIZIP_VERSION)
+endif
+	-$(Q)git clone -q https://github.com/nmoinvaz/minizip.git dependencies/minizip
+	$(Q)git -C dependencies/minizip fetch --all --tags
+	$(Q)git -C dependencies/minizip checkout $(MINIZIP_VERSION)
+	$(Q)$(call TOUCH,$@)
+
+dependencies/dirent/include/dirent.h: Makefile
+ifdef Q
+	@echo Updating dependency: tronkko/dirent @ $(DIRENT_VERSION)
+endif
+	-$(Q)git clone -q https://github.com/tronkko/dirent.git dependencies/dirent
+	$(Q)git -C dependencies/dirent fetch --all --tags
+	$(Q)git -C dependencies/dirent checkout $(DIRENT_VERSION)
+	$(Q)$(call TOUCH,$@)
+
 dependencies/curl/include/curl/curl.h: Makefile
 ifdef Q
 	@echo Updating dependency: curl/curl @ $(CURL_VERSION)
@@ -375,9 +403,9 @@ endif
 
 # SPECIAL FILE HANDLING
 # ---------------------
-$(OUTPUT_DIR)/src/%.o: CPPFLAGS += -Iinclude -Idependencies/curl/include -Idependencies/miniz -Idependencies/json/single_include -Idependencies
+$(OUTPUT_DIR)/src/%.o: CPPFLAGS += -Iinclude -Idependencies/curl/include -Idependencies/miniz -Idependencies/json/single_include -Idependencies -Idependencies/dirent/include
 
-$(OUTPUT_DIR)/amalgated.o: CPPFLAGS += -Iinclude -Idependencies/curl/include -Idependencies/miniz -Idependencies/json/single_include -Idependencies
+$(OUTPUT_DIR)/amalgated.o: CPPFLAGS += -Iinclude -Idependencies/curl/include -Idependencies/miniz -Idependencies/json/single_include -Idependencies -Idependencies/dirent/include
 
 
 # clang implied

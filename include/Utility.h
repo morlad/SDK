@@ -31,7 +31,7 @@
 
 #include "c/ModioC.h"
 #include "nlohmann/json.hpp"
-#include "minizip/minizip.h"
+#include "minizip/mz_zip.h"
 #include "Globals.h"
 
 #ifdef MODIO_LINUX_DETECTED
@@ -47,7 +47,7 @@
 #    include <windows.h>
 #  endif
 #  include <strsafe.h>
-#  include "dirent/dirent.h"
+#  include "dirent.h"
 //#include "vld.h"
 #endif
 

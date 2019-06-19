@@ -1,4 +1,11 @@
 #include "wrappers/MinizipWrapper.h"
+#include "miniz.h"
+#include "minizip/mz_compat.h"
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+#define WRITEBUFFERSIZE (16 * 1024)
 
 namespace modio
 {
@@ -113,6 +120,62 @@ void extract(std::string zip_path, std::string directory_path)
   }
   unzClose(zipfile);
   writeLogLine(zip_path + " extracted", MODIO_DEBUGLEVEL_LOG);
+}
+
+static int filetime(const char *filename, tm_zip *tmzip, uint32_t *dostime)
+{
+    int ret = 0;
+#ifdef _WIN32
+    FILETIME ftLocal;
+    HANDLE hFind;
+    WIN32_FIND_DATAA ff32;
+
+    hFind = FindFirstFileA(filename, &ff32);
+    if (hFind != INVALID_HANDLE_VALUE)
+    {
+        FileTimeToLocalFileTime(&(ff32.ftLastWriteTime), &ftLocal);
+        FileTimeToDosDateTime(&ftLocal,((LPWORD)dostime)+1,((LPWORD)dostime)+0);
+        FindClose(hFind);
+        ret = 1;
+    }
+#else
+#if defined unix || defined __APPLE__
+    struct stat s = {0};
+    struct tm* filedate;
+    time_t tm_t = 0;
+
+    if (strcmp(filename,"-") != 0)
+    {
+        char name[MAXFILENAME+1];
+        int len = strlen(filename);
+        if (len > MAXFILENAME)
+            len = MAXFILENAME;
+
+        strncpy(name, filename, MAXFILENAME - 1);
+        name[MAXFILENAME] = 0;
+
+        if (name[len - 1] == '/')
+            name[len - 1] = 0;
+
+        /* not all systems allow stat'ing a file with / appended */
+        if (stat(name,&s) == 0)
+        {
+            tm_t = s.st_mtime;
+            ret = 1;
+        }
+    }
+
+    filedate = localtime(&tm_t);
+
+    tmzip->tm_sec  = filedate->tm_sec;
+    tmzip->tm_min  = filedate->tm_min;
+    tmzip->tm_hour = filedate->tm_hour;
+    tmzip->tm_mday = filedate->tm_mday;
+    tmzip->tm_mon  = filedate->tm_mon ;
+    tmzip->tm_year = filedate->tm_year;
+#endif
+#endif
+    return ret;
 }
 
 void compressFiles(std::string root_directory, std::vector<std::string> filenames, std::string zip_path)
@@ -268,6 +331,29 @@ void compressDirectory(std::string directory, std::string zip_path)
     filenames[i] = filenames[i];
   }
   compressFiles(directory, filenames, zip_path);
+}
+
+int is_large_file(const char* filename)
+{
+#ifdef _WIN32
+  HANDLE h = CreateFileA(filename, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+  if (h == INVALID_HANDLE_VALUE)
+    return 0;
+  LARGE_INTEGER size = {};
+  GetFileSizeEx(h, &size);
+  CloseHandle(h);
+  return (size.QuadPart >= 0xffffffff);
+#else
+	FILE *file = fopen(filename, "rb");
+  if (!file)
+    return 0;
+
+  fseeko(file, 0, SEEK_END);
+  off_t pos = _ftello(file);
+  fclose(file);
+
+  return (pos >= 0xffffffff);
+#endif
 }
 }
 }

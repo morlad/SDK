@@ -46,3 +46,5 @@ src/modio.a
 !examples/c++/mods_dir/readme.txt
 dependencies/curl/
 dependencies/json/
+dependencies/dirent/
+dependencies/minizip/

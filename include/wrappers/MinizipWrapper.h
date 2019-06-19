@@ -6,8 +6,6 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#include "../dependencies/minizip/unzip.h"
-#include "../dependencies/minizip/minizip.h"
 #include "../Utility.h"
 
 #define dir_delimter '/'
@@ -21,6 +19,7 @@ namespace modio
     void extract(std::string zip_path, std::string directory_path);
     void compressDirectory(std::string directory, std::string zip_path);
     void compressFiles(std::string root_directory, std::vector<std::string> filenames, std::string zip_path);
+    int is_large_file(const char* filename);
   }
 }
 
