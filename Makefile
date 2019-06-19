@@ -185,17 +185,33 @@ endif
 
 # add modio source files via wildcards
 $(OUTPUT_DIR)/amalgated.cpp: Makefile
-	echo "// Amalgated file" > $@
-	cat src/*.cpp >> $@
-	cat src/c/creators/*.cpp >> $@
-	cat src/c/methods/*.cpp >> $@
-	cat src/c/methods/callbacks/*.cpp >> $@
-	cat src/c/schemas/*.cpp >> $@
-	cat src/c++/creators/*.cpp >> $@
-	cat src/c++/methods/*.cpp >> $@
-	cat src/c++/methods/callbacks/*.cpp >> $@
-	cat src/c++/schemas/*.cpp >> $@
-	cat src/wrappers/*.cpp >> $@
+ifdef Q
+	@echo Amalgating source files $@
+endif
+	$(Q)echo // Amalgated file > $@
+ifeq ($(os),windows)
+	$(Q)type src\*.cpp >> $@ 2> $(DEVNULL) 
+	$(Q)type src\c\creators\*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)type src\c\methods\*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)type src\c\methods\callbacks\*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)type src\c\schemas\*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)type src\c++\creators\*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)type src\c++\methods\*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)type src\c++\methods\callbacks\*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)type src\c++\schemas\*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)type src\wrappers\*.cpp >> $@ 2> $(DEVNULL)
+else
+	$(Q)cat src/*.cpp >> $@ 2> $(DEVNULL) 
+	$(Q)cat src/c/creators/*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)cat src/c/methods/*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)cat src/c/methods/callbacks/*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)cat src/c/schemas/*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)cat src/c++/creators/*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)cat src/c++/methods/*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)cat src/c++/methods/callbacks/*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)cat src/c++/schemas/*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)cat src/wrappers/*.cpp >> $@ 2> $(DEVNULL)
+endif
 modio_src += $(OUTPUT_DIR)/amalgated.cpp
 
 
@@ -343,6 +359,7 @@ endif
 
 ifeq ($(os),windows)
 $(OUTPUT_DIR)/src/%.o: CPPFLAGS += -DMODIO_DYNAMICLIB
+$(OUTPUT_DIR)/amalgated.o: CPPFLAGS += -DMODIO_DYNAMICLIB
 $(OUTPUT_DIR)/dependencies/curl/lib/%.o: CPPFLAGS += -Daccess=_access -Dread=_read -Dwrite=_write
 # use Schannel-framework as TLS-backend
 $(OUTPUT_DIR)/dependencies/curl/lib/%.o: CPPFLAGS += -DUSE_SCHANNEL -DUSE_WINDOWS_SSPI
