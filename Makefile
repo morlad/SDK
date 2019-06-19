@@ -191,12 +191,27 @@ modio_src += $(wildcard src/c/methods/*.cpp)
 modio_src += $(wildcard src/c/methods/callbacks/*.cpp)
 modio_src += $(wildcard src/c/schemas/*.cpp)
 
+modio_src += $(wildcard src/c++/*.cpp)
 modio_src += $(wildcard src/c++/creators/*.cpp)
 modio_src += $(wildcard src/c++/methods/*.cpp)
 modio_src += $(wildcard src/c++/methods/callbacks/*.cpp)
 modio_src += $(wildcard src/c++/schemas/*.cpp)
 
 modio_src += $(wildcard src/wrappers/*.cpp)
+
+modio_headers += $(wildcard src/*.h)
+
+modio_headers += $(wildcard src/c/creators/*.h)
+modio_headers += $(wildcard src/c/methods/*.h)
+modio_headers += $(wildcard src/c/methods/callbacks/*.h)
+modio_headers += $(wildcard src/c/schemas/*.h)
+
+modio_headers += $(wildcard src/c++/creators/*.h)
+modio_headers += $(wildcard src/c++/methods/*.h)
+modio_headers += $(wildcard src/c++/methods/callbacks/*.h)
+modio_headers += $(wildcard src/c++/schemas/*.h)
+
+modio_headers += $(wildcard src/wrappers/*.h)
 
 
 # OBJECT FILES
@@ -275,6 +290,7 @@ clean-lib:
 
 $(deps_o): dependencies/json/single_include/nlohmann/json.hpp
 $(deps_o): dependencies/curl/include/curl/curl.h
+$(modio_o): $(modio_headers)
 
 dependencies: $(deps_o)
 modio: $(modio_o)
