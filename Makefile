@@ -164,6 +164,14 @@ deps_src += \
 
 endif
 	
+ifeq ($(os),linux)
+deps_src += \
+	minizip/mz_strm_os_posix.c \
+	minizip/mz_os_posix.c \
+	curl/lib/hostcheck.c \
+	curl/lib/vtls/openssl.c \
+
+endif
 
 ifeq ($(os),windows)
 deps_src += \
@@ -259,6 +267,10 @@ endif
 
 ifeq ($(os),linux)
 LDLIBS += -lstdc++ -lpthread
+# statically links OpenSSL, which is quite huge.
+# maybe replace with mbdtls?
+LDLIBS += -l:libssl.a
+LDLIBS += -l:libcrypto.a
 endif
 
 # COMPILER OPTIONS
@@ -438,6 +450,7 @@ endif
 
 ifeq ($(os),linux)
 $(OUTPUT_DIR)/dependencies/curl/lib/%.o: CPPFLAGS += -DHAVE_CONFIG_H -Iinclude/dependencies/curl/linux
+$(OUTPUT_DIR)/dependencies/curl/lib/%.o: CPPFLAGS += -DUSE_OPENSSL
 endif
 
 ifeq ($(os),windows)
