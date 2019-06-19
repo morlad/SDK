@@ -357,21 +357,21 @@ endif
 
 dependencies/curl/include/curl/curl.h: Makefile
 ifdef Q
-	@echo Updating dependency: curl/curl
+	@echo Updating dependency: curl/curl @ $(CURL_VERSION)
 endif
-	-$(Q)git clone https://github.com/curl/curl.git dependencies/curl
+	-$(Q)git clone -q https://github.com/curl/curl.git dependencies/curl
 	$(Q)git -C dependencies/curl fetch --all --tags
 	$(Q)git -C dependencies/curl checkout $(CURL_VERSION)
-	$(call TOUCH,$@)
+	$(Q)$(call TOUCH,$@)
 
 dependencies/json/single_include/nlohmann/json.hpp: Makefile
 ifdef Q
-	@echo Updating dependency: nlohmann/json
+	@echo Updating dependency: nlohmann/json @ $(JSON_VERSION)
 endif
-	-$(Q)git clone https://github.com/nlohmann/json.git dependencies/json
+	-$(Q)git clone -q https://github.com/nlohmann/json.git dependencies/json
 	$(Q)git -C dependencies/json fetch --all --tags
 	$(Q)git -C dependencies/json checkout $(JSON_VERSION)
-	$(call TOUCH,$@)
+	$(Q)$(call TOUCH,$@)
 
 # SPECIAL FILE HANDLING
 # ---------------------
@@ -426,7 +426,7 @@ ifeq ($(os),windows)
 	LINKER = "$(LLVM_PATH)\bin\lld-link.exe"
 	ensure_dir=mkdir $(subst /,\,$(@D)) 2> $(DEVNULL) || exit 0
 	RM = del
-	TOUCH = copy /b $(subst /,\,$(1)) +,, $(subst /,\,$(1)) 
+	TOUCH = copy /b $(subst /,\,$(1)) +,, $(subst /,\,$(1)) > $(DEVNULL)
 endif
 ifeq ($(os),linux)
 	DEVNULL = /dev/null
