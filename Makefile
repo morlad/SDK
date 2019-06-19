@@ -198,35 +198,6 @@ modio_src += $(wildcard src/c++/schemas/*.cpp)
 
 modio_src += $(wildcard src/wrappers/*.cpp)
 
-$(OUTPUT_DIR)/amalgated.cpp: Makefile $(modio_src)
-ifdef Q
-	@echo Amalgating source files $@
-endif
-	$(Q)echo // Amalgated file > $@
-ifeq ($(os),windows)
-	$(Q)type src\*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)type src\c\creators\*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)type src\c\methods\*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)type src\c\methods\callbacks\*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)type src\c\schemas\*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)type src\c++\creators\*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)type src\c++\methods\*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)type src\c++\methods\callbacks\*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)type src\c++\schemas\*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)type src\wrappers\*.cpp >> $@ 2> $(DEVNULL)
-else
-	$(Q)cat src/*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)cat src/c/creators/*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)cat src/c/methods/*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)cat src/c/methods/callbacks/*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)cat src/c/schemas/*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)cat src/c++/creators/*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)cat src/c++/methods/*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)cat src/c++/methods/callbacks/*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)cat src/c++/schemas/*.cpp >> $@ 2> $(DEVNULL)
-	$(Q)cat src/wrappers/*.cpp >> $@ 2> $(DEVNULL)
-endif
-
 
 # OBJECT FILES
 # ------------
@@ -300,17 +271,47 @@ library: $(OUTPUT_DIR)/$(LIBRARY_NAME)
 clean-lib:
 	$(Q)$(RM) $(OUTPUT_DIR)/$(LIBRARY_NAME)
 
-dependencies: $(deps_o)
+dependencies: dependencies/curl dependencies/json $(deps_o)
 modio: $(modio_o)
 
-$(OUTPUT_DIR)/$(LIBRARY_NAME): $(deps_o) $(modio_o)
+$(OUTPUT_DIR)/amalgated.cpp: Makefile $(modio_src)
+ifdef Q
+	@echo Amalgating source files $@
+endif
+	$(Q)echo // Amalgated file > $@
+ifeq ($(os),windows)
+	$(Q)type src\*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)type src\c\creators\*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)type src\c\methods\*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)type src\c\methods\callbacks\*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)type src\c\schemas\*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)type src\c++\creators\*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)type src\c++\methods\*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)type src\c++\methods\callbacks\*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)type src\c++\schemas\*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)type src\wrappers\*.cpp >> $@ 2> $(DEVNULL)
+else
+	$(Q)cat src/*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)cat src/c/creators/*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)cat src/c/methods/*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)cat src/c/methods/callbacks/*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)cat src/c/schemas/*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)cat src/c++/creators/*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)cat src/c++/methods/*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)cat src/c++/methods/callbacks/*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)cat src/c++/schemas/*.cpp >> $@ 2> $(DEVNULL)
+	$(Q)cat src/wrappers/*.cpp >> $@ 2> $(DEVNULL)
+endif
+
+
+$(OUTPUT_DIR)/$(LIBRARY_NAME): dependencies modio $(deps_o) $(modio_o)
 ifdef Q
 	@echo Linking $@
 endif
 	-$(Q)$(ensure_dir)
 
 ifeq ($(os),osx)
-	$(Q)$(CC) -dynamiclib $(TARGET_ARCH) $(LDFLAGS) $^ $(LDLIBS) $(OUTPUT_OPTION) -Wl,-install_name,@loader_path/$(notdir $@)
+	$(Q)$(CC) -dynamiclib $(TARGET_ARCH) $(LDFLAGS) $(filter .o,$^) $(LDLIBS) $(OUTPUT_OPTION) -Wl,-install_name,@loader_path/$(notdir $@)
 endif
 
 # linker command line exceeds what windows can handle, so split object
@@ -330,12 +331,21 @@ ifeq ($(os),linux)
 endif
 
 
+dependencies/curl: fetch-curl Makefile
+dependencies/json: fetch-json Makefile
+
 fetch-curl:
+ifdef Q
+	@echo Updating dependency: curl/curl
+endif
 	-$(Q)git clone https://github.com/curl/curl.git dependencies/curl
 	$(Q)git -C dependencies/curl fetch --all --tags
 	$(Q)git -C dependencies/curl checkout $(CURL_VERSION)
 
 fetch-json:
+ifdef Q
+	@echo Updating dependency: nlohmann/json
+endif
 	-$(Q)git clone https://github.com/nlohmann/json.git dependencies/json
 	$(Q)git -C dependencies/json fetch --all --tags
 	$(Q)git -C dependencies/json checkout $(JSON_VERSION)
