@@ -362,7 +362,7 @@ endif
 	-$(Q)git clone https://github.com/curl/curl.git dependencies/curl
 	$(Q)git -C dependencies/curl fetch --all --tags
 	$(Q)git -C dependencies/curl checkout $(CURL_VERSION)
-	$(Q)touch $@
+	$(call TOUCH,$@)
 
 dependencies/json/single_include/nlohmann/json.hpp: Makefile
 ifdef Q
@@ -371,7 +371,7 @@ endif
 	-$(Q)git clone https://github.com/nlohmann/json.git dependencies/json
 	$(Q)git -C dependencies/json fetch --all --tags
 	$(Q)git -C dependencies/json checkout $(JSON_VERSION)
-	$(Q)touch $@
+	$(call TOUCH,$@)
 
 # SPECIAL FILE HANDLING
 # ---------------------
@@ -417,6 +417,7 @@ ifeq ($(os),osx)
 	DEVNULL = /dev/null
 	ensure_dir=mkdir -p $(@D) 2> $(DEVNULL) || exit 0
 	RM = rm
+	TOUCH = touch $(1)
 endif
 ifeq ($(os),windows)
 	DEVNULL = NUL
@@ -425,11 +426,13 @@ ifeq ($(os),windows)
 	LINKER = "$(LLVM_PATH)\bin\lld-link.exe"
 	ensure_dir=mkdir $(subst /,\,$(@D)) 2> $(DEVNULL) || exit 0
 	RM = del
+	TOUCH = copy /b $(subst /,\,$(1)) +,, $(subst /,\,$(1)) 
 endif
 ifeq ($(os),linux)
 	DEVNULL = /dev/null
 	ensure_dir=mkdir -p $(@D) 2> $(DEVNULL) || exit 0
 	RM = rm
+	TOUCH = touch $(1)
 endif
 
 
