@@ -305,8 +305,8 @@ modio: $(modio_o)
 ifeq ($(os),windows)
 
 define CAT
-	$(Q)echo \#line 1 \"$(1)\" >> $(2)
-	$(Q)type $(1) >> $(2)
+	$(Q)echo #line 1 "$(1)" >> $(2)
+	$(Q)type $(subst /,\,$(1)) >> $(2)
 
 endef
 
