@@ -184,13 +184,27 @@ deps_src += \
 endif
 
 # add modio source files via wildcards
-$(OUTPUT_DIR)/amalgated.cpp: Makefile
+modio_src += $(wildcard src/*.cpp)
+
+modio_src += $(wildcard src/c/creators/*.cpp)
+modio_src += $(wildcard src/c/methods/*.cpp)
+modio_src += $(wildcard src/c/methods/callbacks/*.cpp)
+modio_src += $(wildcard src/c/schemas/*.cpp)
+
+modio_src += $(wildcard src/c++/creators/*.cpp)
+modio_src += $(wildcard src/c++/methods/*.cpp)
+modio_src += $(wildcard src/c++/methods/callbacks/*.cpp)
+modio_src += $(wildcard src/c++/schemas/*.cpp)
+
+modio_src += $(wildcard src/wrappers/*.cpp)
+
+$(OUTPUT_DIR)/amalgated.cpp: Makefile $(modio_src)
 ifdef Q
 	@echo Amalgating source files $@
 endif
 	$(Q)echo // Amalgated file > $@
 ifeq ($(os),windows)
-	$(Q)type src\*.cpp >> $@ 2> $(DEVNULL) 
+	$(Q)type src\*.cpp >> $@ 2> $(DEVNULL)
 	$(Q)type src\c\creators\*.cpp >> $@ 2> $(DEVNULL)
 	$(Q)type src\c\methods\*.cpp >> $@ 2> $(DEVNULL)
 	$(Q)type src\c\methods\callbacks\*.cpp >> $@ 2> $(DEVNULL)
@@ -201,7 +215,7 @@ ifeq ($(os),windows)
 	$(Q)type src\c++\schemas\*.cpp >> $@ 2> $(DEVNULL)
 	$(Q)type src\wrappers\*.cpp >> $@ 2> $(DEVNULL)
 else
-	$(Q)cat src/*.cpp >> $@ 2> $(DEVNULL) 
+	$(Q)cat src/*.cpp >> $@ 2> $(DEVNULL)
 	$(Q)cat src/c/creators/*.cpp >> $@ 2> $(DEVNULL)
 	$(Q)cat src/c/methods/*.cpp >> $@ 2> $(DEVNULL)
 	$(Q)cat src/c/methods/callbacks/*.cpp >> $@ 2> $(DEVNULL)
@@ -212,14 +226,13 @@ else
 	$(Q)cat src/c++/schemas/*.cpp >> $@ 2> $(DEVNULL)
 	$(Q)cat src/wrappers/*.cpp >> $@ 2> $(DEVNULL)
 endif
-modio_src += $(OUTPUT_DIR)/amalgated.cpp
 
 
 # OBJECT FILES
 # ------------
 deps_o += $(subst .c,.o,$(addprefix $(OUTPUT_DIR)/dependencies/,$(filter %.c,$(deps_src))))
 deps_o += $(subst .cpp,.o,$(addprefix $(OUTPUT_DIR)/dependencies/,$(filter %.cpp,$(deps_src))))
-modio_o += $(subst .cpp,.o,$(filter %.cpp,$(modio_src)))
+modio_o += $(OUTPUT_DIR)/amalgated.o
 
 
 # LINKER OPTIONS
@@ -340,6 +353,7 @@ $(OUTPUT_DIR)/amalgated.o: CPPFLAGS += -Iinclude -Idependencies/curl/include -Id
 ifneq ($(os),linux)
 $(OUTPUT_DIR)/src/wrappers/Curl%.o: NOWARNINGS += -Wno-disabled-macro-expansion
 $(OUTPUT_DIR)/dependencies/%.o: NOWARNINGS += -Wno-everything
+$(OUTPUT_DIR)/amalgated.o: NOWARNINGS += -Wno-old-style-cast -Wno-disabled-macro-expansion -Wno-unused-parameter
 endif
 
 $(OUTPUT_DIR)/dependencies/minizip/%.o: CPPFLAGS += -Idependencies -Idependencies/miniz
