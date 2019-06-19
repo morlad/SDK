@@ -140,19 +140,19 @@ static int filetime(const char *filename, tm_zip *tmzip, uint32_t *dostime)
     }
 #else
 #if defined unix || defined __APPLE__
-    struct stat s = {0};
+    struct stat s = { };
     struct tm* filedate;
     time_t tm_t = 0;
 
     if (strcmp(filename,"-") != 0)
     {
-        char name[MAXFILENAME+1];
-        int len = strlen(filename);
-        if (len > MAXFILENAME)
-            len = MAXFILENAME;
+        char name[MAX_FILENAME+1];
+        size_t len = strlen(filename);
+        if (len > MAX_FILENAME)
+            len = MAX_FILENAME;
 
-        strncpy(name, filename, MAXFILENAME - 1);
-        name[MAXFILENAME] = 0;
+        strncpy(name, filename, MAX_FILENAME - 1);
+        name[MAX_FILENAME] = 0;
 
         if (name[len - 1] == '/')
             name[len - 1] = 0;
@@ -349,7 +349,7 @@ int is_large_file(const char* filename)
     return 0;
 
   fseeko(file, 0, SEEK_END);
-  off_t pos = _ftello(file);
+  off_t pos = ftello(file);
   fclose(file);
 
   return (pos >= 0xffffffff);

@@ -1,4 +1,8 @@
 #include "modio.h"
+#if defined(MODIO_LINUX_DETECTED) || defined(MODIO_OSX_DETECTED)
+# include <unistd.h>
+#endif
+
 
 static void loadEventPollingFile()
 {

@@ -160,6 +160,7 @@ ifeq ($(os),osx)
 deps_src += \
 	curl/lib/vtls/sectransp.c \
 	minizip/mz_strm_os_posix.c \
+	minizip/mz_os_posix.c \
 
 endif
 	
@@ -231,6 +232,11 @@ TARGET_ARCH = -m64 -g -march=core2
 ifeq ($(os),osx)
 TARGET_ARCH += -arch x86_64 -mmacosx-version-min=$(MIN_MACOS_VERSION) -stdlib=libc++
 LDLIBS += -lc++ -framework Security
+# minizip uses it in mz_os_posix.c for utf8-conversion.
+# However, those conversions are never used. But there is no way
+# to deactivate it, other than modifying this file directly.
+# So iconv as dependency it is.
+LDLIBS += -liconv
 ifeq ($(USE_SANITIZER),1)
 TARGET_ARCH += -fsanitize=address
 TARGET_ARCH += -fsanitize=undefined
@@ -268,7 +274,6 @@ endif
 
 CPPFLAGS += -DHAVE_STDINT_H
 CPPFLAGS += -DHAVE_INTTYPES_H
-CPPFLAGS += -D_LARGEFILE64_SOURCE
 CPPFLAGS += -DMZ_ZIP_NO_ENCRYPTION
 
 ifeq ($(os),windows)
@@ -280,6 +285,7 @@ CPPFLAGS += -DHAS_STDINT_H
 endif
 
 ifeq ($(os),linux)
+CPPFLAGS += -D_LARGEFILE64_SOURCE
 CPPFLAGS += -D_POSIX_C_SOURCE=200809L
 CFLAGS += -fPIC
 CXXFLAGS += -fPIC
@@ -345,7 +351,7 @@ endif
 	-$(Q)$(ensure_dir)
 
 ifeq ($(os),osx)
-	$(Q)$(CC) -dynamiclib $(TARGET_ARCH) $(LDFLAGS) $(filter .o,$^) $(LDLIBS) $(OUTPUT_OPTION) -Wl,-install_name,@loader_path/$(notdir $@)
+	$(Q)$(CC) -dynamiclib $(TARGET_ARCH) $(LDFLAGS) $(filter %.o,$^) $(LDLIBS) $(OUTPUT_OPTION) -Wl,-install_name,@loader_path/$(notdir $@)
 endif
 
 # linker command line exceeds what windows can handle, so split object
@@ -360,7 +366,7 @@ ifeq ($(os),windows)
 endif
 
 ifeq ($(os),linux)
-	$(Q)$(CC) -shared $(TARGET_ARCH) $(LDFLAGS) $^ $(LDLIBS) $(OUTPUT_OPTION)
+	$(Q)$(CC) -shared $(TARGET_ARCH) $(LDFLAGS) $(filter %.o,$^) $(LDLIBS) $(OUTPUT_OPTION)
 	$(Q)strip --strip-debug $@
 endif
 
@@ -403,10 +409,14 @@ endif
 
 # SPECIAL FILE HANDLING
 # ---------------------
-$(OUTPUT_DIR)/src/%.o: CPPFLAGS += -Iinclude -Idependencies/curl/include -Idependencies/miniz -Idependencies/json/single_include -Idependencies -Idependencies/dirent/include
+$(OUTPUT_DIR)/src/%.o: CPPFLAGS += -Iinclude -Idependencies/curl/include -Idependencies/miniz -Idependencies/json/single_include -Idependencies
 
-$(OUTPUT_DIR)/amalgated.o: CPPFLAGS += -Iinclude -Idependencies/curl/include -Idependencies/miniz -Idependencies/json/single_include -Idependencies -Idependencies/dirent/include
+$(OUTPUT_DIR)/amalgated.o: CPPFLAGS += -Iinclude -Idependencies/curl/include -Idependencies/miniz -Idependencies/json/single_include -Idependencies
 
+ifeq ($(os),windows)
+$(OUTPUT_DIR)/amalgated.o: CPPFLAGS += -Idependencies/dirent/include
+$(OUTPUT_DIR)/src/%.o: CPPFLAGS += -Idependencies/dirent/include
+endif
 
 # clang implied
 ifneq ($(os),linux)
