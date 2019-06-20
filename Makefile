@@ -24,7 +24,7 @@ endif
 OUTPUT_DIR := build
 
 # macos only:
-MIN_MACOS_VERSION = 10.13
+MIN_MACOS_VERSION = 10.11
 
 # windows only:
 # path to the LLVM installation
