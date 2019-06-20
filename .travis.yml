@@ -8,22 +8,12 @@ dist: xenial
 sudo: false
 
 script:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      cmake -D test=on . ;
-    else
-      CXX=/usr/bin/g++-5 CC=/usr/bin/gcc-5 cmake -Dtest=on . ;
-    fi
-  - make -j2
-  - make test
-  - if [[ "$TRAVIS_TAG" ]]; then
-      cmake -D mode=static . ;
-      make -j2 ; 
-    fi
+  - make
   - if [ "$TRAVIS_TAG" ]; then
       if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-        zip Macos.zip libmodio.a libmodio.dylib;
+        zip Macos.zip libmodio.dylib;
       else
-        zip Linux.zip libmodio.a libmodio.so;
+        zip Linux.zip libmodio.so;
       fi
     fi
 
