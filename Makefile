@@ -211,19 +211,19 @@ modio_src += $(wildcard src/c++/schemas/*.cpp)
 
 modio_src += $(wildcard src/wrappers/*.cpp)
 
-modio_headers += $(wildcard src/*.h)
+modio_headers += $(wildcard include/*.h)
 
-modio_headers += $(wildcard src/c/creators/*.h)
-modio_headers += $(wildcard src/c/methods/*.h)
-modio_headers += $(wildcard src/c/methods/callbacks/*.h)
-modio_headers += $(wildcard src/c/schemas/*.h)
+modio_headers += $(wildcard include/c/creators/*.h)
+modio_headers += $(wildcard include/c/methods/*.h)
+modio_headers += $(wildcard include/c/methods/callbacks/*.h)
+modio_headers += $(wildcard include/c/schemas/*.h)
 
-modio_headers += $(wildcard src/c++/creators/*.h)
-modio_headers += $(wildcard src/c++/methods/*.h)
-modio_headers += $(wildcard src/c++/methods/callbacks/*.h)
-modio_headers += $(wildcard src/c++/schemas/*.h)
+modio_headers += $(wildcard include/c++/creators/*.h)
+modio_headers += $(wildcard include/c++/methods/*.h)
+modio_headers += $(wildcard include/c++/methods/callbacks/*.h)
+modio_headers += $(wildcard include/c++/schemas/*.h)
 
-modio_headers += $(wildcard src/wrappers/*.h)
+modio_headers += $(wildcard include/wrappers/*.h)
 
 
 # OBJECT FILES
