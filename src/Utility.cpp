@@ -556,3 +556,25 @@ extern "C" char *strdup(char const *str)
   return _strdup(str);
 }
 #endif
+
+// minizip references some iconv functions, requiring iconv to be linked in.
+// However the functions referencing iconv are never called anywhere else
+// in the code, so it should be safe to just add stubs for those functions
+// and get rid of the dependency.
+#ifdef MODIO_OSX_DETECTED
+#include <iconv.h>
+iconv_t iconv_open(const char *tocode, const char *fromcode)
+{
+  exit(1);
+}
+
+int iconv_close(iconv_t cd)
+{
+  exit(1);
+}
+
+size_t iconv(iconv_t cd, char **inbuf, size_t *inbytesleft, char **outbuf, size_t *outbytesleft)
+{
+  exit(1);
+}
+#endif

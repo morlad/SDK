@@ -240,11 +240,6 @@ TARGET_ARCH = -m64 -g -march=core2
 ifeq ($(os),osx)
 TARGET_ARCH += -arch x86_64 -mmacosx-version-min=$(MIN_MACOS_VERSION) -stdlib=libc++
 LDLIBS += -lc++ -framework Security
-# minizip uses it in mz_os_posix.c for utf8-conversion.
-# However, those conversions are never used. But there is no way
-# to deactivate it, other than modifying this file directly.
-# So iconv as dependency it is.
-LDLIBS += -liconv
 ifeq ($(USE_SANITIZER),1)
 TARGET_ARCH += -fsanitize=address
 TARGET_ARCH += -fsanitize=undefined
