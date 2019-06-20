@@ -244,7 +244,6 @@ ifeq ($(USE_SANITIZER),1)
 TARGET_ARCH += -fsanitize=address
 TARGET_ARCH += -fsanitize=undefined
 endif
-TARGET_ARCH += -fvisibility=hidden
 endif
 
 ifeq ($(os),windows)
@@ -262,7 +261,9 @@ LDLIBS += crypt32.lib
 endif
 
 ifeq ($(os),linux)
-TARGET_ARCH += -fvisibility=hidden
+# do not add exoprts from included static libs (i.e. OpenSSL)
+# to this shared library's list of exports.
+LDFLAGS += -Wl,--exclude-libs,ALL
 LDLIBS += -lstdc++ -lpthread
 # statically links OpenSSL, which is quite huge.
 # maybe replace with mbdtls?
@@ -298,6 +299,13 @@ CPPFLAGS += -D_LARGEFILE64_SOURCE
 CPPFLAGS += -D_POSIX_C_SOURCE=200809L
 CFLAGS += -fPIC
 CXXFLAGS += -fPIC
+CFLAGS += -fvisibility=hidden
+CXXFLAGS += -fvisibility=hidden
+endif
+
+ifeq ($(os),osx)
+CFLAGS += -fvisibility=hidden
+CXXFLAGS += -fvisibility=hidden
 endif
 
 # TARGETS
