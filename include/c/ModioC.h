@@ -10,7 +10,7 @@
 #    define MODIO_DLL  __declspec(dllimport)
 #  endif
 #else
-#  define MODIO_DLL
+#  define MODIO_DLL __attribute__ ((visibility ("default"))) 
 #endif
 
 typedef unsigned int u32;
